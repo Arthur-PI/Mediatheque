@@ -1,12 +1,15 @@
 package service;
 
+import java.net.Socket;
+
 import server.Service;
 
 public class Retour implements Runnable, Service{
+	/* PORT 5000 */
 	private Thread thread;
 	
 	
-	public Retour() {
+	public Retour(Socket s) {
 		this.thread = new Thread();
 	}
 	

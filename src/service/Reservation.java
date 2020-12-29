@@ -1,11 +1,14 @@
 package service;
 
+import java.net.Socket;
+
 import server.Service;
 
 public class Reservation implements Runnable, Service{
+	/* PORT 3000 */
 	private Thread thread;
 	
-	public Reservation() {
+	public Reservation(Socket s) {
 		this.thread = new Thread();
 	}
 	
