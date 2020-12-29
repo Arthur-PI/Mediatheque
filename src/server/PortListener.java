@@ -2,16 +2,18 @@ package server;
 
 public class PortListener implements Runnable{
 	
-	private int PORT;
+	private final int PORT;
+	private Thread thread;
 	
-	public PortListener() {
-		// TODO
+	public PortListener(int port) {
+		this.PORT = port;
+		this.thread = new Thread();
+		this.thread.start();
 	}
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-		
+		// TODO
 	}
 
 }

@@ -1,9 +1,16 @@
 package service;
 
-public class Emprunt implements Runnable{
+import server.Service;
+
+public class Emprunt implements Runnable, Service {
+	private Thread thread;
 	
 	public Emprunt() {
-		// TODO
+		this.thread = new Thread();
+	}
+	
+	public void launch() {
+		this.thread.start();
 	}
 
 	@Override
