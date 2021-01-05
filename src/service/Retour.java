@@ -17,9 +17,16 @@ public class Retour implements Runnable, Service{
 	public void launch() {
 		this.thread.start();
 	}
+	
+	public void getNumAbo() {
+		// TODO Auto-generated method stub
+		
+	}
 
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
 	}
+
+	
 }
