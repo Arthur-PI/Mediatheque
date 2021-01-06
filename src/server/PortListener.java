@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import service.ServiceFactory;
-
 public class PortListener implements Runnable{
 	
 	private final int PORT;
@@ -32,10 +30,4 @@ public class PortListener implements Runnable{
 		} catch (IOException e) { e.printStackTrace(); }
 		
 	}
-	
-	public static void main(String args[]) {
-		new PortListener(3000, new ServiceFactory());
-		while(true) {}
-	}
-
 }

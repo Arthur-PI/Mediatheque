@@ -9,7 +9,7 @@ public class Reservation implements Runnable, Service{
 	private Thread thread;
 	
 	public Reservation(Socket s) {
-		this.thread = new Thread();
+		this.thread = new Thread(this);
 	}
 	
 	@Override

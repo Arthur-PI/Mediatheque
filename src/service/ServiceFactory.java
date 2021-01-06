@@ -13,10 +13,10 @@ public class ServiceFactory implements IServiceFactory
 	public void newService(int n, Socket s) {
 		switch(n) {
 		case 3000:
-			new Emprunt(s);
+			new Reservation(s);
 			break;
 		case 4000:
-			new Reservation(s);
+			new Emprunt(s);
 			break;
 		case 5000:
 			new Retour(s);

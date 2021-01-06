@@ -21,9 +21,15 @@ public class Emprunt implements Runnable, Service {
 	private PrintWriter cout;
 	private static int CODERREUR = 1;
 	
+	private static String ENCOURS = "en cours";
+	private static String NOUVEAU = "nouveau";
+	private static String FINI = "over";
+	
 	
 	public Emprunt(Socket s) {
-		this.thread = new Thread();
+		this.clientSoc = s;
+		this.thread = new Thread(this);
+		this.thread.start();
 	}
 	
 	public void launch() {
@@ -33,9 +39,14 @@ public class Emprunt implements Runnable, Service {
 	public int setNumAbo() throws IOException {
 		String numeroAbo;
 		String message = "Quel est votre numero d'abonne (0 pour annuler):";
+		String etat = NOUVEAU;
+		System.out.println("Authentification de l'utilisateur en cours...");
+		
 		do {
-			cout.write(message);
+			cout.println(etat);
+			cout.println(message);
 			numeroAbo = this.sin.readLine();
+			etat = ENCOURS;
 		} while (!this.abonnes.containsKey(numeroAbo) && !numeroAbo.equals("0"));
 		
 		if (numeroAbo.equals("0")) {
@@ -54,13 +65,17 @@ public class Emprunt implements Runnable, Service {
 			this.cout = new PrintWriter (this.clientSoc.getOutputStream(), true);
 			
 			if (setNumAbo() == CODERREUR) { // Annulation de connexion
-				this.sin.close();
-				this.cout.write("over");
+				
+				this.cout.println(FINI);
 				this.cout.close();
 				this.clientSoc.close();
 				return;
 			}
-			// L'abonne c'est connecte
+			cout.println(FINI);
+			cout.println("Bienvenue sur le service emprunt !");
+			this.sin.close();
+			this.cout.close();
+			this.clientSoc.close();
 			
 			
 		} catch (IOException e) { 

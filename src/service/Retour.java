@@ -10,7 +10,7 @@ public class Retour implements Runnable, Service{
 	
 	
 	public Retour(Socket s) {
-		this.thread = new Thread();
+		this.thread = new Thread(this);
 	}
 	
 	@Override
