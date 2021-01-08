@@ -14,9 +14,10 @@ public class Client {
 		Socket monSocket;
 		String serviceNumber;
 		String etat;
+		Scanner sc = new Scanner(System.in);
 		
 		if (args.length == 0 || Integer.parseInt(args[0]) < 0 || Integer.parseInt(args[0]) > 3) {
-			serviceNumber = homeScreen();
+			serviceNumber = homeScreen(sc);
 		}
 		else {
 			serviceNumber = args[0];
@@ -30,7 +31,7 @@ public class Client {
 		
 		String inputMessage = "";
 		String outputMessage = "";
-		Scanner sc = new Scanner(System.in);
+		
 		
 		System.out.println("Debut de la tranmission");
 		
@@ -72,7 +73,7 @@ public class Client {
 	    System.out.flush();  
 	}  
 	
-	public static String homeScreen() {
+	public static String homeScreen(Scanner sc) {
 		System.out.println("Bienvenue sur l'application de votre Mediatheque preferer");
 		System.out.println("Que voulez-vous faire ?");
 		System.out.println("1 - Reservation");
@@ -80,7 +81,6 @@ public class Client {
 		System.out.println("3 - Retour");
 		System.out.println("0 - Quitter");
 		int rep;
-		Scanner sc = new Scanner(System.in);
 		
 		do {
 			try {
