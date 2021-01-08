@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import client.Abonne;
+import produit.DVD;
+import produit.Document;
 import service.ServiceFactory;
 
 public class ServerHandler {
@@ -12,6 +14,23 @@ public class ServerHandler {
 	
 	public static void main(String args[]) {
 		
+		HashMap<String, Abonne> abonnes = getAbonnes();
+		HashMap<String, Document> documents = getDocuments();
+		
+		FACTORY.setAbonnes(abonnes);
+		FACTORY.setDocuments(documents);
+		
+		System.out.println("Starting Server");
+		
+		for(int i=0; i < 3; i++) {
+			new PortListener(PORTS[i], FACTORY);
+		}
+		while(true) {
+			
+		}
+	}
+	
+	public static HashMap<String, Abonne> getAbonnes(){
 		Abonne a1 = new Abonne("Arthur", "Pigeon");
 		Abonne a2 = new Abonne("Jorge", "Koch");
 		Abonne a3 = new Abonne("Landon", "Ritter");
@@ -30,20 +49,38 @@ public class ServerHandler {
 		test.put(a6.getNumero(), a6);
 		test.put(a7.getNumero(), a7);
 		
+		System.out.println("Abonnes:");
 		for (String a : test.keySet()) {
 			System.out.println(a);
 		}
 		
-		FACTORY.setAbonnes(test);
+		return test;
+	}
+	
+	public static HashMap<String, Document> getDocuments(){
+		DVD d1 = new DVD("The Matrix", 3, false, "2020");
+		DVD d2 = new DVD("Les evades", 2.5, false, "1994");
+		DVD d3 = new DVD("Alien", 3.24, true, "1979");
+		DVD d4 = new DVD("Drunk", 4, false, "2020");
+		DVD d5 = new DVD("La Haine", 2.70, false, "1995");
+		DVD d6 = new DVD("The Trueman Show", 3, false, "2020");
+		DVD d7 = new DVD("Parasite", 4.2, false, "2019");
 		
 		
-		System.out.println("Starting Server");
+		HashMap<String, Document> test = new HashMap<>();
+		test.put(String.valueOf(d1.numero()), d1);
+		test.put(String.valueOf(d2.numero()), d2);
+		test.put(String.valueOf(d3.numero()), d3);
+		test.put(String.valueOf(d4.numero()), d4);
+		test.put(String.valueOf(d5.numero()), d5);
+		test.put(String.valueOf(d6.numero()), d6);
+		test.put(String.valueOf(d7.numero()), d7);
 		
-		for(int i=0; i < 3; i++) {
-			new PortListener(PORTS[i], FACTORY);
+		System.out.println("DVD:");
+		for (String a : test.keySet()) {
+			System.out.println(a);
 		}
-		while(true) {
-			
-		}
+		
+		return test;
 	}
 }

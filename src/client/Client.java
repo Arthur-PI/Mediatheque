@@ -11,45 +11,58 @@ public class Client {
 	 * */
 	
 	private static String SERVERIP = "127.0.0.1";
-	private static String ENCOURS = "en cours";
-	private static String NOUVEAU = "nouveau";
-	private static String FINI = "over";
+	private static final int ENCOURS = 0b00001;
+	private static final int NOUVEAU = 0b00010;
+	private static final int FINI = 0b00100;
+	private static final int NORESPONSE = 0b01000;
+	private static final int LONGMESSAGE = 0b10000;
 	
-	public static void main(String args[]) throws IOException {
+	public static void main(String args[]) throws IOException, InterruptedException {
 		Socket monSocket;
 		String serviceNumber;
-		String etat;
+		int etat;
 		Scanner sc = new Scanner(System.in);
 		
-		if (args.length == 0 || Integer.parseInt(args[0]) < 0 || Integer.parseInt(args[0]) > 3) {
+		if (args.length == 0 || Integer.parseInt(args[0]) < 0 || Integer.parseInt(args[0]) > 3)
 			serviceNumber = homeScreen(sc);
-		}
-		else {
+		else
 			serviceNumber = args[0];
-		}
+		
 		monSocket = socketService(serviceNumber);
-		if (monSocket == null) { return; }
+		
+		if (monSocket == null) 
+			return;
+		
 		BufferedReader sin = new BufferedReader(new InputStreamReader(monSocket.getInputStream()));
 		PrintWriter cout = new PrintWriter(monSocket.getOutputStream());
 		
 		etat = NOUVEAU;
-		
 		String inputMessage = "";
 		String outputMessage = "";
 		
+
+		System.out.println("Debut de la transmission");
 		
-		System.out.println("Debut de la tranmission");
-		
-		while(!etat.equals(FINI)) {
-			etat = sin.readLine();
-			if (etat.equals(NOUVEAU)) { clearScreen(); }
-			if (etat.equals(FINI)) {
-				continue;
-			}
+		while((etat & FINI) != FINI) {
+			etat = sin.read();
 			
-			inputMessage = sin.readLine();
+			if ((etat & NOUVEAU) == NOUVEAU)
+				clearScreen();
+			if ((etat & FINI) == FINI)
+				continue;
+			
+			inputMessage = "";
+			
+			if ((etat & LONGMESSAGE) == LONGMESSAGE)
+				while(sin.ready())
+					inputMessage += sin.readLine() + "\n";
+			else
+				inputMessage = sin.readLine();
 			
 			System.out.println(inputMessage);
+			
+			if ((etat & NORESPONSE) == NORESPONSE)
+				continue;
 			
 			outputMessage = getUserInput(sc);
 			
@@ -113,7 +126,6 @@ public class Client {
 			}
 		} while (rep < 0 || rep > 3);
 		
-		System.out.println("You choose " + rep);
 		return String.valueOf(rep);
 	}
 	

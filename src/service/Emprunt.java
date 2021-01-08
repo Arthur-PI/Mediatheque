@@ -39,13 +39,28 @@ public class Emprunt extends Service implements Runnable {
 				return;
 			}
 			
-			cout.println(NOUVEAU);
+			cout.write(NOUVEAU | NORESPONSE);
 			cout.println(this.abonne.getPrenom() + ", bienvenue au service Emprunt.");
-			// TODO
+			
+			cout.write(ENCOURS | LONGMESSAGE);
+			String stock = this.getStock();
+			cout.println("Que voulez-vous emprunter (0 pour annuler):\n" + stock);
+			// TODO Regler le probleme de la chaine de charactere
+			
 			
 		} catch (IOException e) { 
 			e.printStackTrace();
 		}
+	}
+	
+	public String getStock() {
+		String stock = "";
+		Document curDoc;
+		for (String docNum : this.documents.keySet()) {
+			curDoc = this.documents.get(docNum);
+			stock +="\n" + curDoc.toString() + "\n";
+		}
+		return stock;
 	}
 
 }

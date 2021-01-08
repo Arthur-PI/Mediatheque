@@ -20,10 +20,12 @@ public abstract class Service {
 	protected BufferedReader sin;
 	protected PrintWriter cout;
 	
-	protected static int CODERREUR = 1;
-	protected static String ENCOURS = "en cours";
-	protected static String NOUVEAU = "nouveau";
-	protected static String FINI = "over";
+	protected static final int CODERREUR = 1;
+	protected static final int ENCOURS = 0b00001;
+	protected static final int NOUVEAU = 0b00010;
+	protected static final int FINI = 0b00100;
+	protected static final int NORESPONSE = 0b01000;
+	protected static final int LONGMESSAGE = 0b10000;
 	
 	protected int setNumAbo() throws IOException {
 		/*
@@ -34,9 +36,9 @@ public abstract class Service {
 		
 		String numeroAbo;
 		String message = "Quel est votre numero d'abonne (0 pour annuler):";
-		String etat = NOUVEAU;
+		int etat = NOUVEAU;
 		do {
-			cout.println(etat);
+			cout.write(etat);
 			cout.println(message);
 			numeroAbo = this.sin.readLine();
 			etat = ENCOURS;
@@ -58,7 +60,7 @@ public abstract class Service {
 		 * Output: None
 		 * */
 		
-		this.cout.println(FINI);
+		this.cout.write(FINI);
 		this.cout.close();
 		this.clientSoc.close();
 	}

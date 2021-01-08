@@ -6,7 +6,7 @@ import service.ReservationException;
 
 public interface Document {
 	int numero();
-	void reservationPour(Abonne ab) throws ReservationException ;
+	void reserverPour(Abonne ab) throws ReservationException ;
 	void empruntPar(Abonne ab) throws EmpruntException;
 	void retour();
 }
