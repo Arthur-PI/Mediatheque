@@ -5,6 +5,11 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class Client {
+	/*
+	 * Application cliente de la mediatheque
+	 * Connection via socket a l'addresse SERVERIP
+	 * */
+	
 	private static String SERVERIP = "127.0.0.1";
 	private static String ENCOURS = "en cours";
 	private static String NOUVEAU = "nouveau";
@@ -37,8 +42,10 @@ public class Client {
 		
 		while(!etat.equals(FINI)) {
 			etat = sin.readLine();
-			System.out.println(etat);
 			if (etat.equals(NOUVEAU)) { clearScreen(); }
+			if (etat.equals(FINI)) {
+				continue;
+			}
 			
 			inputMessage = sin.readLine();
 			
@@ -60,6 +67,11 @@ public class Client {
 	}
 	
 	public static String getUserInput(Scanner sc) {
+		/*
+		 * Recupere la saisie clavier de l'utilisateur dans le terminal
+		 * Input: Un flux de type Scanner
+		 * Output: La reponse de l'utilisateur
+		 * */
 		String rep = "";
 		System.out.print("> ");
 		
@@ -68,12 +80,22 @@ public class Client {
 		return rep;
 	}
 	
-	public static void clearScreen() {  
+	public static void clearScreen() { 
+		/*
+		 * Fait un clear du terminal de l'utilisateur
+		 * Input: None
+		 * Output None
+		 * */
 	    System.out.print("\033[H\033[2J");  
 	    System.out.flush();  
 	}  
 	
 	public static String homeScreen(Scanner sc) {
+		/*
+		 * Procedure du choix du service par l'utilisateur si aucun fichier de configuration n'est present
+		 * Input: Un flux de type Scanner
+		 * Output: Une des valeur possible entre (0/1/2/3) 
+		 * */
 		System.out.println("Bienvenue sur l'application de votre Mediatheque preferer");
 		System.out.println("Que voulez-vous faire ?");
 		System.out.println("1 - Reservation");
@@ -92,14 +114,16 @@ public class Client {
 		} while (rep < 0 || rep > 3);
 		
 		System.out.println("You choose " + rep);
-		
-		sc.close();
-		
 		return String.valueOf(rep);
-		
 	}
 	
 	public static Socket socketService(String n) {
+		/*
+		 * Creer un socket entre le client et le service donner en argument
+		 * Input: Un numero de service
+		 * Output: Un socket vers le service demander sinon null 
+		 * */
+		
 		if (n.equals("0")) {
 			return null;
 		}

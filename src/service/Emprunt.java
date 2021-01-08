@@ -9,53 +9,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import client.Abonne;
+import produit.Document;
 import server.Service;
 
-public class Emprunt implements Runnable, Service {
-	/* PORT 4000 */
-	private Thread thread;
-	private HashMap<String, Abonne> abonnes;
-	private Abonne abonne;
-	private Socket clientSoc;
-	private BufferedReader sin;
-	private PrintWriter cout;
-	private static int CODERREUR = 1;
+public class Emprunt extends Service implements Runnable {
+	/* Service de Emprunt de la mediateque, le thread s'occuppe d'un client a la fois
+	 * La comunication vers le client se fait en deux temps un premier String pour donner l'etat de la communication:
+	 * Nouveau debut de communication(NOUVEAU), Communication en cours (ENCOURS), et communication finit(FINIS)
+	 * et une deuxieme chaine de characteres pour donner le message a afficher a l'utilisateur
+	 * Connection au PORT 4000
+	 *  */
 	
-	private static String ENCOURS = "en cours";
-	private static String NOUVEAU = "nouveau";
-	private static String FINI = "over";
-	
-	
-	public Emprunt(Socket s) {
-		this.clientSoc = s;
+	public Emprunt(Socket s, HashMap<String, Abonne> abo, HashMap<String, Document> docs) {
 		this.thread = new Thread(this);
+		this.clientSoc = s;
+		this.abonnes = abo;
+		this.documents = docs;
 		this.thread.start();
-	}
-	
-	public void launch() {
-		this.thread.start();
-	}
-	
-	public int setNumAbo() throws IOException {
-		String numeroAbo;
-		String message = "Quel est votre numero d'abonne (0 pour annuler):";
-		String etat = NOUVEAU;
-		System.out.println("Authentification de l'utilisateur en cours...");
-		
-		do {
-			cout.println(etat);
-			cout.println(message);
-			numeroAbo = this.sin.readLine();
-			etat = ENCOURS;
-		} while (!this.abonnes.containsKey(numeroAbo) && !numeroAbo.equals("0"));
-		
-		if (numeroAbo.equals("0")) {
-			return CODERREUR;
-		}
-		else {
-			this.abonne = this.abonnes.get(numeroAbo);
-			return 0;
-		}
 	}
 
 	@Override
@@ -65,18 +35,13 @@ public class Emprunt implements Runnable, Service {
 			this.cout = new PrintWriter (this.clientSoc.getOutputStream(), true);
 			
 			if (setNumAbo() == CODERREUR) { // Annulation de connexion
-				
-				this.cout.println(FINI);
-				this.cout.close();
-				this.clientSoc.close();
+				terminate();
 				return;
 			}
-			cout.println(FINI);
-			cout.println("Bienvenue sur le service emprunt !");
-			this.sin.close();
-			this.cout.close();
-			this.clientSoc.close();
 			
+			cout.println(NOUVEAU);
+			cout.println(this.abonne.getPrenom() + ", bienvenue au service Emprunt.");
+			// TODO
 			
 		} catch (IOException e) { 
 			e.printStackTrace();

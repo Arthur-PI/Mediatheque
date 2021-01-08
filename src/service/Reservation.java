@@ -1,30 +1,44 @@
 package service;
 
+import java.io.*;
 import java.net.Socket;
+import java.util.HashMap;
 
+import client.Abonne;
+import produit.Document;
 import server.Service;
 
-public class Reservation implements Runnable, Service{
-	/* PORT 3000 */
-	private Thread thread;
+public class Reservation extends Service implements Runnable{
+	/* Service de Reservation de la mediateque, le thread s'occuppe d'un client a la fois
+	 * Connection au PORT 3000
+	 *  */
 	
-	public Reservation(Socket s) {
+	public Reservation(Socket s, HashMap<String, Abonne> abo, HashMap<String, Document> docs) {
 		this.thread = new Thread(this);
-	}
-	
-	@Override
-	public void launch() {
+		this.clientSoc = s;
+		this.abonnes = abo;
+		this.documents = docs;
 		this.thread.start();
 	}
 	
-	public void getNumAbo() {
-		// TODO Auto-generated method stub
-		
-	}
-
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
+		try {
+			this.sin = new BufferedReader(new InputStreamReader(this.clientSoc.getInputStream()));
+			this.cout = new PrintWriter (this.clientSoc.getOutputStream(), true);
+			
+			if (setNumAbo() == CODERREUR) { // Annulation de connexion
+				terminate();
+				return;
+			}
+			
+			cout.println(NOUVEAU);
+			cout.println(this.abonne.getPrenom() + ", bienvenue au service Reservation.");
+			// TODO
+			
+		} catch (IOException e) { 
+			e.printStackTrace();
+		}
 	}
 
 	
