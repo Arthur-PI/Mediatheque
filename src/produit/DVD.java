@@ -1,6 +1,8 @@
 package produit;
 
-import java.util.Date;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 
 import client.Abonne;
 import service.EmpruntException;
@@ -17,8 +19,11 @@ public class DVD implements Document{
 	
 	private Abonne reservationPar;
 	private Abonne emprunterPar;
-	private Date dateEmprunt;
-	private Date dateReservation;
+	// Les Date sont les dates et heures de fin des services pas le debut
+	private LocalDateTime dateEmprunt;
+	private LocalDateTime dateReservation;
+	
+	private static long NBJOURSEMPRUNT = 15;
 	
 	
 	public DVD(String titre, double prix, boolean pourAdulte, String annee) {
@@ -44,22 +49,24 @@ public class DVD implements Document{
 	@Override
 	public void reserverPour(Abonne ab) throws ReservationException {
 		synchronized(this) {
-			if (this.isReserver() || this.isEmprunter()) { throw new ReservationException(this); }
+			if (this.isReserver() || this.isEmprunter()) { throw new ReservationException(this, "caca"); }
 			this.reservationPar = ab;
 		}
 	}
 
 	@Override
 	public void empruntPar(Abonne ab) throws EmpruntException {
-		synchronized (this) {
-			if (this.isReserver() && this.reservationPar != ab) {
-				throw new EmpruntException(this);
-			} else if (this.isEmprunter()) {
-				throw new EmpruntException(this);
-			}
-			this.emprunterPar = ab;
-			this.reservationPar = null;
-		}
+		if (this.isReserver() && this.reservationPar != ab)
+			throw new EmpruntException(this, "Le DVD est reserver jusqu'a " + this.dateReservation.format(DateTimeFormatter.ISO_LOCAL_TIME));
+		else if (this.isEmprunter())
+			throw new EmpruntException(this, "Le DVD est emprunter jusqu'au " + this.dateEmprunt.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.MEDIUM)));
+		else if (!ab.isAdulte())
+			throw new EmpruntException(this, "Vous n'avez pas l'age pour emprunter ce DVD");
+		
+		this.emprunterPar = ab;
+		this.dateEmprunt = LocalDateTime.now().plusDays(NBJOURSEMPRUNT);
+		this.reservationPar = null;
+		this.dateReservation = null;
 	}
 	
 	@Override
@@ -82,7 +89,13 @@ public class DVD implements Document{
 	}
 
 	public boolean isReserver() {
-		return this.reservationPar != null;
+		if (this.dateReservation == null)
+			return false;
+		if (this.dateReservation.isBefore(LocalDateTime.now()))
+			return true;
+		this.dateReservation = null;
+		this.reservationPar = null;
+		return false;
 	}
 
 	public boolean isEmprunter() {

@@ -62,6 +62,7 @@ public abstract class Service {
 		
 		this.cout.write(FINI);
 		this.cout.close();
+		this.sin.close();
 		this.clientSoc.close();
 	}
 	

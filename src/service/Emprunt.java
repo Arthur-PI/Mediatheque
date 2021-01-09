@@ -39,19 +39,38 @@ public class Emprunt extends Service implements Runnable {
 				return;
 			}
 			
-			cout.write(NOUVEAU | NORESPONSE);
+			cout.write(NOUVEAU + NORESPONSE);
 			cout.println(this.abonne.getPrenom() + ", bienvenue au service Emprunt.");
 			
-			cout.write(ENCOURS | LONGMESSAGE);
+			cout.write(ENCOURS + LONGMESSAGE);
 			String stock = this.getStock();
 			cout.println("Que voulez-vous emprunter (0 pour annuler):\n" + stock);
-			// TODO Regler le probleme de la chaine de charactere
 			
+			String numeroDocument = this.getDocumentChoice();
+			String message = "";
+			try {
+				this.documents.get(numeroDocument).empruntPar(this.abonne);
+				message = "Vous avez louer le le document numero: " + numeroDocument ;
+			} catch(EmpruntException e) {
+				message = e.toString();
+			}
 			
-		} catch (IOException e) { 
-			e.printStackTrace();
-		}
+			cout.write(NOUVEAU + NORESPONSE);
+			cout.println(message);
+			terminate();
+			
+		} catch (IOException e) { e.printStackTrace(); }
 	}
+	
+	private String getDocumentChoice() throws IOException {
+		String docNum = "";
+		do {
+			docNum = sin.readLine();
+		} while(!docNum.equals("0") && !this.documents.containsKey(docNum));
+		
+		return docNum;
+	}
+	
 	
 	public String getStock() {
 		String stock = "";
