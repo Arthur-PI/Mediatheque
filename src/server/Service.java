@@ -21,11 +21,12 @@ public abstract class Service {
 	protected PrintWriter cout;
 	
 	protected static final int CODERREUR = 1;
-	protected static final int ENCOURS = 0b00001;
-	protected static final int NOUVEAU = 0b00010;
-	protected static final int FINI = 0b00100;
-	protected static final int NORESPONSE = 0b01000;
-	protected static final int LONGMESSAGE = 0b10000;
+	protected static final int ENCOURS = 0b000001;
+	protected static final int NOUVEAU = 0b000010;
+	protected static final int FINI = 0b000100;
+	protected static final int NORESPONSE = 0b001000;
+	protected static final int LONGMESSAGE = 0b010000;
+	protected static final int NOMESSAGE = 0b100000;
 	
 	protected int setNumAbo() throws IOException {
 		/*
@@ -59,11 +60,31 @@ public abstract class Service {
 		 * Input: None
 		 * Output: None
 		 * */
-		
 		this.cout.write(FINI);
 		this.cout.close();
 		this.sin.close();
 		this.clientSoc.close();
+	}
+	
+	protected String getStock() {
+		String stock = "";
+		Document curDoc;
+		for (String docNum : this.documents.keySet()) {
+			curDoc = this.documents.get(docNum);
+			stock +="\n\n" + curDoc.toString();
+		}
+		return stock;
+	}
+	
+	protected String getDocumentChoice(int etat, String message) throws IOException {
+		String docNum = "";
+		do {
+			cout.write(etat);
+			cout.println(message);
+			docNum = sin.readLine();
+			etat = ENCOURS + NOMESSAGE;
+		} while(!docNum.equals("0") && !this.documents.containsKey(docNum));
+		return docNum;
 	}
 	
 	public abstract void run();

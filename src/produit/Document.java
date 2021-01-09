@@ -9,5 +9,4 @@ public interface Document {
 	void reserverPour(Abonne ab) throws ReservationException ;
 	void empruntPar(Abonne ab) throws EmpruntException;
 	void retour();
-	
 }

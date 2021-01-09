@@ -32,9 +32,30 @@ public class Reservation extends Service implements Runnable{
 				return;
 			}
 			
-			cout.println(NOUVEAU);
-			cout.println(this.abonne.getPrenom() + ", bienvenue au service Reservation.");
-			// TODO
+			cout.write(NOUVEAU + NORESPONSE);
+			cout.println(this.abonne.getPrenom() + ", bienvenue au service Emprunt.");
+			
+			cout.write(ENCOURS + LONGMESSAGE);
+			String stock = this.getStock();
+			String message = "Que voulez-vous reserver (0 pour annuler):\n" + stock;
+			
+			String numeroDocument = this.getDocumentChoice(ENCOURS + LONGMESSAGE, message);
+			if (numeroDocument.equals("0")) {
+				terminate(); 
+				return;
+			}
+			
+			message = "";
+			try {
+				this.documents.get(numeroDocument).reserverPour(this.abonne);
+				message = "Vous avez reserver le document numero " + numeroDocument + ", vous avez 2H pour venir le recuperer.";
+			} catch(ReservationException e) {
+				message = e.toString();
+			}
+			
+			cout.write(NOUVEAU + NORESPONSE);
+			cout.println(message);
+			terminate();
 			
 		} catch (IOException e) { 
 			e.printStackTrace();

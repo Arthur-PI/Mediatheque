@@ -11,11 +11,12 @@ public class Client {
 	 * */
 	
 	private static String SERVERIP = "127.0.0.1";
-	private static final int ENCOURS = 0b00001;
-	private static final int NOUVEAU = 0b00010;
-	private static final int FINI = 0b00100;
-	private static final int NORESPONSE = 0b01000;
-	private static final int LONGMESSAGE = 0b10000;
+	private static final int ENCOURS = 0b000001;
+	private static final int NOUVEAU = 0b000010;
+	private static final int FINI = 0b000100;
+	private static final int NORESPONSE = 0b001000;
+	private static final int LONGMESSAGE = 0b010000;
+	private static final int NOMESSAGE = 0b100000;
 	
 	public static void main(String args[]) throws IOException, InterruptedException {
 		Socket monSocket;
@@ -59,7 +60,8 @@ public class Client {
 			else
 				inputMessage = sin.readLine();
 			
-			System.out.println(inputMessage);
+			if ((etat & NOMESSAGE) != NOMESSAGE)
+				System.out.println(inputMessage);
 			
 			if ((etat & NORESPONSE) == NORESPONSE)
 				continue;
@@ -70,7 +72,7 @@ public class Client {
 			cout.flush();
 		}
 		
-		System.out.println("Fin de la tranmission");
+		System.out.println("Fin de la transmission");
 		
 		cout.close();
 		sin.close();

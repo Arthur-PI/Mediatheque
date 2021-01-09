@@ -17,13 +17,15 @@ public class DVD implements Document{
 	private double prixParJour;
 	private String annee;
 	
-	private Abonne reservationPar;
+	private Abonne reserverPar;
 	private Abonne emprunterPar;
 	// Les Date sont les dates et heures de fin des services pas le debut
 	private LocalDateTime dateEmprunt;
 	private LocalDateTime dateReservation;
 	
-	private static long NBJOURSEMPRUNT = 15;
+	private final static long NBJOURS_EMPRUNT = 15;
+	private final static long LIMITE_RETARD = 15;
+	private final static long NBMINUTES_RESERVATION = 120;
 	
 	
 	public DVD(String titre, double prix, boolean pourAdulte, String annee) {
@@ -31,6 +33,7 @@ public class DVD implements Document{
 		this.prixParJour = prix;
 		this.numero = NUMEROS++;
 		this.pourAdulte = pourAdulte;
+		this.annee = annee;
 	}
 	
 	public DVD(String titre, double prix, String annee) {
@@ -48,31 +51,55 @@ public class DVD implements Document{
 
 	@Override
 	public void reserverPour(Abonne ab) throws ReservationException {
-		synchronized(this) {
-			if (this.isReserver() || this.isEmprunter()) { throw new ReservationException(this, "caca"); }
-			this.reservationPar = ab;
+		synchronized (this) {
+			if (ab.isBanished())
+				throw new ReservationException(this,
+						"Vous avez une penalite de retard vous ne pouvez rien reserver jusqu'au "
+								+ ab.getDatePenalite());
+			else if (this.isReserver())
+				throw new ReservationException(this, "Le DVD est deja reserver jusqu'a "
+						+ this.dateReservation.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)));
+			else if (this.isEmprunter())
+				throw new ReservationException(this, "Le DVD est deja emprunter jusqu'au " + this.dateEmprunt
+						.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)));
+			else if (!ab.isAdulte() && this.isPourAdulte())
+				throw new ReservationException(this, "Vous n'avez pas l'age pour emprunter ce DVD");
+			this.reserverPar = ab;
+			this.dateReservation = LocalDateTime.now().plusMinutes(NBMINUTES_RESERVATION);
 		}
 	}
 
 	@Override
 	public void empruntPar(Abonne ab) throws EmpruntException {
-		if (this.isReserver() && this.reservationPar != ab)
-			throw new EmpruntException(this, "Le DVD est reserver jusqu'a " + this.dateReservation.format(DateTimeFormatter.ISO_LOCAL_TIME));
-		else if (this.isEmprunter())
-			throw new EmpruntException(this, "Le DVD est emprunter jusqu'au " + this.dateEmprunt.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.MEDIUM)));
-		else if (!ab.isAdulte())
-			throw new EmpruntException(this, "Vous n'avez pas l'age pour emprunter ce DVD");
-		
-		this.emprunterPar = ab;
-		this.dateEmprunt = LocalDateTime.now().plusDays(NBJOURSEMPRUNT);
-		this.reservationPar = null;
-		this.dateReservation = null;
+		synchronized (this) {
+			if (ab.isBanished())
+				throw new EmpruntException(this,
+						"Vous avez une penalite de retard vous ne pouvez rien emprunter jusqu'au "
+								+ ab.getDatePenalite());
+			else if (this.isReserver() && this.reserverPar != ab)
+				throw new EmpruntException(this, "Le DVD est deja reserver jusqu'a "
+						+ this.dateReservation.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)));
+			else if (this.isEmprunter())
+				throw new EmpruntException(this, "Le DVD est deja emprunter jusqu'au " + this.dateEmprunt
+						.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)));
+			else if (!ab.isAdulte() && this.isPourAdulte())
+				throw new EmpruntException(this, "Vous n'avez pas l'age pour emprunter ce DVD");
+			this.emprunterPar = ab;
+			this.dateEmprunt = LocalDateTime.now().plusDays(NBJOURS_EMPRUNT);
+			this.reserverPar = null;
+			this.dateReservation = null;
+		}
 	}
 	
 	@Override
 	public void retour() {
-		synchronized(this) {
-			// TODO
+		synchronized (this) {
+			if (this.dateEmprunt == null)
+				return;
+			else if (LocalDateTime.now().isAfter(this.dateEmprunt.plusDays(LIMITE_RETARD)))
+				this.emprunterPar.startPenaliteRetard();
+			this.emprunterPar = null;
+			this.dateEmprunt = null;
 		}
 	}
 	
@@ -89,13 +116,15 @@ public class DVD implements Document{
 	}
 
 	public boolean isReserver() {
-		if (this.dateReservation == null)
+		synchronized (this) {
+			if (this.dateReservation == null)
+				return false;
+			if (this.dateReservation.isAfter(LocalDateTime.now()))
+				return true;
+			this.dateReservation = null;
+			this.reserverPar = null;
 			return false;
-		if (this.dateReservation.isBefore(LocalDateTime.now()))
-			return true;
-		this.dateReservation = null;
-		this.reservationPar = null;
-		return false;
+		}
 	}
 
 	public boolean isEmprunter() {
@@ -108,11 +137,7 @@ public class DVD implements Document{
 
 	@Override
 	public String toString() {
-		String adulte;
-		if (this.isPourAdulte())
-			adulte = "Oui";
-		else
-			adulte = "Non";
+		String adulte = this.isPourAdulte()?"Oui":"Non";
 		return this.titre + "\n- Type: DVD\n- Date: " + this.annee + "\n- Prix: " + this.prixParJour + "\n- Adulte: " + adulte + "\n- Numero: " + this.numero;
 	}
 	

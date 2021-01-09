@@ -1,12 +1,14 @@
 package service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Properties;
+
+import java.util.*;  
+import javax.mail.*;  
+import javax.mail.internet.*;
+import javax.activation.*;
 
 import client.Abonne;
 import produit.Document;
@@ -40,46 +42,78 @@ public class Emprunt extends Service implements Runnable {
 			}
 			
 			cout.write(NOUVEAU + NORESPONSE);
-			cout.println(this.abonne.getPrenom() + ", bienvenue au service Emprunt.");
+			cout.println("Bonjour " + this.abonne.getPrenom() + ", bienvenue au service Emprunt.");
 			
-			cout.write(ENCOURS + LONGMESSAGE);
 			String stock = this.getStock();
-			cout.println("Que voulez-vous emprunter (0 pour annuler):\n" + stock);
+			String message = "Que voulez-vous emprunter (0 pour annuler):\n" + stock;
 			
-			String numeroDocument = this.getDocumentChoice();
-			String message = "";
+			String numeroDocument = this.getDocumentChoice(ENCOURS + LONGMESSAGE, message);
+			if (numeroDocument.equals("0")) {
+				terminate(); 
+				return;
+			}
 			try {
 				this.documents.get(numeroDocument).empruntPar(this.abonne);
-				message = "Vous avez louer le le document numero: " + numeroDocument ;
+				cout.write(NOUVEAU + NORESPONSE);
+				cout.println("Vous avez louer le le document numero: " + numeroDocument);
 			} catch(EmpruntException e) {
-				message = e.toString();
+				
+				String reponse = "";
+				cout.write(NOUVEAU + NORESPONSE);
+				cout.println(e);
+				cout.write(ENCOURS + NORESPONSE);
+				cout.println("Voulez-vous recevoir un mail quand ce produit revient ? (oui/non):");
+				do {
+					cout.write(ENCOURS + NOMESSAGE);
+					cout.println("");
+					reponse = sin.readLine();
+				} while (!reponse.equals("oui") && !reponse.equals("non"));
+				
+				if (reponse.equals("oui")) {
+					cout.write(ENCOURS + NORESPONSE);
+					this.sendEmail();
+					cout.println("Vous serez donc prevenu par mail");
+				}
 			}
-			
-			cout.write(NOUVEAU + NORESPONSE);
-			cout.println(message);
+			cout.write(ENCOURS + NORESPONSE);
+			cout.println("Merci de votre visite, a bientot.");
 			terminate();
 			
 		} catch (IOException e) { e.printStackTrace(); }
 	}
 	
-	private String getDocumentChoice() throws IOException {
-		String docNum = "";
-		do {
-			docNum = sin.readLine();
-		} while(!docNum.equals("0") && !this.documents.containsKey(docNum));
+	public void sendEmail() {
+		// Ne fonctionne que sous Java 8 !!
+		final String user = "roreply.mediatheque@gmail.com";
+		final String password = "Motdepassedelamediateque";
+		String host = "smtp.gmail.com";
 		
-		return docNum;
-	}
-	
-	
-	public String getStock() {
-		String stock = "";
-		Document curDoc;
-		for (String docNum : this.documents.keySet()) {
-			curDoc = this.documents.get(docNum);
-			stock +="\n" + curDoc.toString() + "\n";
+		String to = this.abonne.getEmail();
+		
+		Properties props = new Properties();
+		
+		props.put("mail.smtp.auth", "true");
+		props.put("mail.smtp.starttls.enable", "true");
+		props.put("mail.smtp.host", host);
+		props.put("mail.smtp.port", "587");
+		
+		Session session = Session.getDefaultInstance(props, new javax.mail.Authenticator() {
+			protected PasswordAuthentication getPasswordAuthentication() {
+				return new PasswordAuthentication(user, password);
+			}
+		});
+		
+		try {
+			MimeMessage message = new MimeMessage(session);
+			message.setFrom(new InternetAddress(user));
+			message.addRecipient(Message.RecipientType.TO,new InternetAddress(to));  
+		    message.setSubject("MY FUCKING CONTENT");  
+		    message.setText("LE VOILA TON PUTAIN DE MAIL SALE FILS DE PUTE,\nVA BIEN NIQUER TA MERE LA PROCHAINE FOIS !");
+		    Transport.send(message);
+		    System.out.println("Mail envoyer !");
+			
+		} catch (MessagingException e) {
+			e.printStackTrace();
 		}
-		return stock;
 	}
-
 }
