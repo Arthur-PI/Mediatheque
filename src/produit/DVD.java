@@ -27,7 +27,7 @@ public class DVD implements Document{
 	
 	private final static long NBJOURS_EMPRUNT = 15;
 	private final static long LIMITE_RETARD = 15;
-	private final static long NBMINUTES_RESERVATION = 1;
+	private final static long NBMINUTES_RESERVATION = 120;
 	
 	
 	public DVD(String titre, double prix, boolean pourAdulte, String annee) {
@@ -140,7 +140,9 @@ public class DVD implements Document{
 		/*
 		 * Ajoute une adresse email a liste des adresses qui attendent d'etre prevenue en cas de retour
 		 * */
-		this.mailListe.add(email);
+		synchronized(this.mailListe) {
+			this.mailListe.add(email);
+		}
 		
 	}
 	
@@ -149,9 +151,11 @@ public class DVD implements Document{
 		 * Renvoie une l'ArrayList des adresses mail qui attendre d'etre prevenue en cas de retour
 		 * Clear la liste une fois envoyer
 		 * */
-		ArrayList<String> tmp = new ArrayList<>(this.mailListe);
-		this.mailListe.clear();
-		return tmp;
+		synchronized (this.mailListe) {
+			ArrayList<String> tmp = new ArrayList<>(this.mailListe);
+			this.mailListe.clear();
+			return tmp;
+		}
 	}
 	
 	public int getSecondUntilFinReserve(){

@@ -1,9 +1,6 @@
 package client;
 
-import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.time.temporal.ChronoUnit;
@@ -38,12 +35,12 @@ public class Abonne {
 		/*
 		 * Genere un numero d'utilisateur aleatoire qui n'existe pas deja
 		 * */
+		Random r = new Random(); // 12/09/2001
+		this.numero = "";
+		for (int i = 0; i < 4; i++) {
+			this.numero += String.valueOf(r.nextInt(10));
+		}
 		synchronized (NUMEROS) {
-			Random r = new Random(); // 12/09/2001
-			this.numero = "";
-			for (int i = 0; i < 4; i++) {
-				this.numero += String.valueOf(r.nextInt(10));
-			}
 			if (NUMEROS.contains(this.numero)) {
 				generateNumero();
 			} else {
@@ -91,8 +88,7 @@ public class Abonne {
 	
 	public String getDatePenalite() {
 		synchronized (this) {
-			return this.penalite != null ? this.penalite.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
-					: null;
+			return this.penalite != null ? this.penalite.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)):null;
 		}
 	}
 

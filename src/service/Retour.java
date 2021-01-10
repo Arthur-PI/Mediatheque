@@ -4,7 +4,11 @@ import java.io.*;
 import java.net.Socket;
 import java.util.*;
 
-import javax.mail.*;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
@@ -29,8 +33,7 @@ public class Retour extends Service implements Runnable{
 	public void run() {
 		try {
 			// ---- CREATION DES FLUX DE COMMUNICATION AVEC L'UTILISATEUR ----
-			this.sin = new BufferedReader(new InputStreamReader(this.clientSoc.getInputStream()));
-			this.cout = new PrintWriter (this.clientSoc.getOutputStream(), true);
+			this.initFlux();
 			
 			// ---- MESSAGE DE BIENVENUE ----
 			cout.write(NOUVEAU + NORESPONSE);
@@ -102,5 +105,4 @@ public class Retour extends Service implements Runnable{
 			e.printStackTrace();
 		}
 	}
-	
 }

@@ -93,6 +93,10 @@ public abstract class Service {
 		} while(!docNum.equals("0") && !this.documents.containsKey(docNum));
 		return docNum;
 	}
+	protected void initFlux() throws IOException {
+		this.sin = new BufferedReader(new InputStreamReader(this.clientSoc.getInputStream()));
+		this.cout = new PrintWriter (this.clientSoc.getOutputStream(), true);
+	}
 	
 	protected String getReponseOuiNon(int etat, String message) {
 		/*

@@ -25,8 +25,7 @@ public class Reservation extends Service implements Runnable{
 	public void run() {
 		try {
 			// ---- CREATION DES FLUX DE COMMUNICATION AVEC L'UTILISATEUR ----
-			this.sin = new BufferedReader(new InputStreamReader(this.clientSoc.getInputStream()));
-			this.cout = new PrintWriter (this.clientSoc.getOutputStream(), true);
+			this.initFlux();
 			
 			// ---- AUTHENTIFICATION DE L'ABONNE ----
 			if (setNumAbo() == CODERREUR) { // Annulation de connexion
@@ -62,8 +61,23 @@ public class Reservation extends Service implements Runnable{
 					if (reponse.equals("oui"))
 						message = sendMusique(numeroDocument);
 				}
-				else
-					message = e.toString();
+				else {
+					// ---- SI LE DOCUMENT N'EST PAS DISPONIBLE A L'EMPRUNT AFFICHAGE DU MESSAGE D'ERREUR A L'ABONNE ----
+					String reponse = "";
+					cout.write(NOUVEAU + NORESPONSE);
+					cout.println(e);
+					
+					// ---- DEMANDE A L'ABONNE SI IL VEUT RECEVOIR UN MAIL QUAND LE DOCUEMENT REVIENT ----
+					reponse = this.getReponseOuiNon(ENCOURS + NORESPONSE, "Voulez-vous recevoir un mail quand ce produit revient ? (oui/non):");
+					
+					if (reponse.equals("oui")) {
+						// ---- ENREGISTREMENT DE L'EMAIL DE L"ABONNE DANS LA LISTE D'ATTENTE DU DOCUMENT ----
+						cout.write(ENCOURS + NORESPONSE);
+						this.documents.get(numeroDocument).addToMailList(this.abonne.getEmail());
+						cout.println("Vous serez donc prevenu par mail");
+					}
+					message = "Au revoir et a bientot dans notre mediateque.";
+				}
 			}
 			
 			// ---- MESSAGE DE FIN + FERMUTURE DE TOUT LES FLUX ----
