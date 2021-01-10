@@ -1,0 +1,3 @@
+#! /bin/sh
+
+java -cp .:../lib/mail.jar:../lib/activation.jar server.ServerHandler
