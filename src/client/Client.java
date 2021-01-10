@@ -1,15 +1,8 @@
 package client;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.Socket;
 import java.util.Scanner;
-
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class Client {
 	/*
@@ -179,7 +172,10 @@ public class Client {
 	}
 	
 	public static MP3 startMusique(){
-		MP3 music = new MP3("bestmusicever.mp3");
+		/*
+		 * Joue la musique d'attente et retourne le player
+		 * */
+		MP3 music = new MP3("../bestmusicever.mp3");
 		music.play();
 	    return music;
 	}

@@ -27,7 +27,7 @@ public class DVD implements Document{
 	
 	private final static long NBJOURS_EMPRUNT = 15;
 	private final static long LIMITE_RETARD = 15;
-	private final static long NBMINUTES_RESERVATION = 120;
+	private final static long NBMINUTES_RESERVATION = 1;
 	
 	
 	public DVD(String titre, double prix, boolean pourAdulte, String annee) {
@@ -56,17 +56,18 @@ public class DVD implements Document{
 	public void reserverPour(Abonne ab) throws ReservationException {
 		synchronized (this) {
 			if (ab.isBanished())
-				throw new ReservationException(this,"Vous avez une penalite de retard vous ne pouvez rien reserver jusqu'au " + ab.getDatePenalite());
+				throw new ReservationException(this, "Vous avez une penalite de retard vous ne pouvez rien reservé jusqu'au " + ab.getDatePenalite());
 			else if (this.isReserver()) {
 				long difference = this.getSecondUntilFinReserve();
-				if ( difference <= 60)
-					throw new ReservationException(this, "Le DVD est deja louer mais il reste moins de " + difference + " secondes avant la fin, voulez-vous attendre ? (oui/non):");
-				throw new ReservationException(this, "Le DVD est deja reserver jusqu'a " + this.dateReservation.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)));
+				if ( difference <= 60 && difference > 0)
+					throw new ReservationException(this, "Le DVD est deja reservé mais il reste moins de " + difference + " secondes avant la fin, voulez-vous attendre ? (oui/non):");
+				throw new ReservationException(this, "Le DVD est deja reservé jusqu'a " + this.dateReservation.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)));
 			}
 			else if (this.isEmprunter())
 				throw new ReservationException(this, "Le DVD est deja emprunter jusqu'au " + this.dateEmprunt.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)));
 			else if (!ab.isAdulte() && this.isPourAdulte())
 				throw new ReservationException(this, "Vous n'avez pas l'age pour emprunter ce DVD");
+			
 			this.reserverPar = ab;
 			this.dateReservation = LocalDateTime.now().plusMinutes(NBMINUTES_RESERVATION);
 		}
@@ -83,6 +84,7 @@ public class DVD implements Document{
 				throw new EmpruntException(this, "Le DVD est deja emprunter jusqu'au " + this.dateEmprunt.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)));
 			else if (!ab.isAdulte() && this.isPourAdulte())
 				throw new EmpruntException(this, "Vous n'avez pas l'age pour emprunter ce DVD");
+			
 			this.emprunterPar = ab;
 			this.dateEmprunt = LocalDateTime.now().plusDays(NBJOURS_EMPRUNT);
 			this.reserverPar = null;
@@ -135,19 +137,28 @@ public class DVD implements Document{
 	}
 	
 	public void addToMailList(String email) {
-		
+		/*
+		 * Ajoute une adresse email a liste des adresses qui attendent d'etre prevenue en cas de retour
+		 * */
 		this.mailListe.add(email);
 		
 	}
 	
 	public ArrayList<String> getMailList(){
+		/*
+		 * Renvoie une l'ArrayList des adresses mail qui attendre d'etre prevenue en cas de retour
+		 * Clear la liste une fois envoyer
+		 * */
 		ArrayList<String> tmp = new ArrayList<>(this.mailListe);
 		this.mailListe.clear();
 		return tmp;
 	}
 	
 	public int getSecondUntilFinReserve(){
-		return (int) Duration.between(this.dateReservation, LocalDateTime.now()).getSeconds();
+		/*
+		 * Renvoie le temps qu'il reste en secondes avant la fin de la reservation en cours
+		 * */
+		return (int) Duration.between(LocalDateTime.now(), this.dateReservation).getSeconds();
 	}
 
 	@Override

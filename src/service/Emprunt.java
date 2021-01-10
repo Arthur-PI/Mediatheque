@@ -3,12 +3,6 @@ package service;
 import java.io.*;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.Properties;
-
-import java.util.*;  
-import javax.mail.*;  
-import javax.mail.internet.*;
-import javax.activation.*;
 
 import client.Abonne;
 import produit.Document;
@@ -33,48 +27,53 @@ public class Emprunt extends Service implements Runnable {
 	@Override
 	public void run() {
 		try {
+			// ---- CREATION DES FLUX DE COMMUNICATION AVEC L'UTILISATEUR ----
 			this.sin = new BufferedReader(new InputStreamReader(this.clientSoc.getInputStream()));
 			this.cout = new PrintWriter (this.clientSoc.getOutputStream(), true);
 			
+			// ---- AUTHENTIFICATION DE L'ABONNE ----
 			if (setNumAbo() == CODERREUR) { // Annulation de connexion
 				terminate();
 				return;
 			}
 			
+			// ---- MESSAGE DE BIENVENUE A L'ABONNE ----
 			cout.write(NOUVEAU + NORESPONSE);
 			cout.println("Bonjour " + this.abonne.getPrenom() + ", bienvenue au service Emprunt.");
 			
+			// ---- AFFICHAGE DU STOCK POUR L'ABONNE ----
 			String stock = this.getStock();
 			String message = "Que voulez-vous emprunter (0 pour annuler):\n" + stock;
 			
+			// ---- RECUPERATION DU CHOIX DE DOCUMENT DE L'ABONNE ----
 			String numeroDocument = this.getDocumentChoice(ENCOURS + LONGMESSAGE, message);
 			if (numeroDocument.equals("0")) {
 				terminate(); 
 				return;
 			}
 			try {
+				// ---- EMPRUNT DU DOCUMENT CHOISIT PAR L'ABONNE SI DISPONIBLE ----
 				this.documents.get(numeroDocument).empruntPar(this.abonne);
 				cout.write(NOUVEAU + NORESPONSE);
 				cout.println("Vous avez louer le le document numero: " + numeroDocument);
 			} catch(EmpruntException e) {
-				
+				// ---- SI LE DOCUMENT N'EST PAS DISPONIBLE A L'EMPRUNT AFFICHAGE DU MESSAGE D'ERREUR A L'ABONNE ----
 				String reponse = "";
 				cout.write(NOUVEAU + NORESPONSE);
 				cout.println(e);
-				cout.write(ENCOURS + NORESPONSE);
-				cout.println("Voulez-vous recevoir un mail quand ce produit revient ? (oui/non):");
-				do {
-					cout.write(ENCOURS + NOMESSAGE);
-					cout.println("");
-					reponse = sin.readLine();
-				} while (!reponse.equals("oui") && !reponse.equals("non"));
+				
+				// ---- DEMANDE A L'ABONNE SI IL VEUT RECEVOIR UN MAIL QUAND LE DOCUEMENT REVIENT ----
+				reponse = this.getReponseOuiNon(ENCOURS + NORESPONSE, "Voulez-vous recevoir un mail quand ce produit revient ? (oui/non):");
 				
 				if (reponse.equals("oui")) {
+					// ---- ENREGISTREMENT DE L'EMAIL DE L"ABONNE DANS LA LISTE D'ATTENTE DU DOCUMENT ----
 					cout.write(ENCOURS + NORESPONSE);
 					this.documents.get(numeroDocument).addToMailList(this.abonne.getEmail());
 					cout.println("Vous serez donc prevenu par mail");
 				}
 			}
+			
+			// ---- MESSAGE DE FIN + FERMETURE DES FLUX ----
 			cout.write(ENCOURS + NORESPONSE);
 			cout.println("Merci de votre visite, a bientot.");
 			terminate();

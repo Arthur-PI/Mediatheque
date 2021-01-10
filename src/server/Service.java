@@ -1,8 +1,6 @@
 package server;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.HashMap;
 
@@ -68,6 +66,9 @@ public abstract class Service {
 	}
 	
 	protected String getStock() {
+		/*
+		 * Renvoie une chaine de charactere representant le stock de documents de la mediateque
+		 * */
 		String stock = "";
 		Document curDoc;
 		for (String docNum : this.documents.keySet()) {
@@ -78,6 +79,11 @@ public abstract class Service {
 	}
 	
 	protected String getDocumentChoice(int etat, String message) throws IOException {
+		/*
+		 * Communique avec l'abonne pour recupere son choix de document.
+		 * Input: etat initial de la comunication et message initial
+		 * Outpur: reponse de l'utilisateur soit un numero de document valide soit 0.
+		 * */
 		String docNum = "";
 		do {
 			cout.write(etat);
@@ -86,6 +92,26 @@ public abstract class Service {
 			etat = ENCOURS + NOMESSAGE;
 		} while(!docNum.equals("0") && !this.documents.containsKey(docNum));
 		return docNum;
+	}
+	
+	protected String getReponseOuiNon(int etat, String message) {
+		/*
+		 * Comunication avec le client dans le but de recuperer une reponse Oui/Non
+		 * Input: etat initial de la discussion et message initial de la discussion 
+		 * Output: reponse Oui/Non donnee par l'utilisateur (null en cas d'erreur de lecture)
+		 * */
+		try {
+		String reponse = "";
+		cout.write(etat);
+		cout.println(message);
+		do {
+			cout.write(ENCOURS + NOMESSAGE);
+			cout.println("");
+			reponse = sin.readLine();
+		} while (!reponse.equals("oui") && !reponse.equals("non"));
+		return reponse;
+		
+		} catch (IOException e) {return null;}
 	}
 	
 	public abstract void run();

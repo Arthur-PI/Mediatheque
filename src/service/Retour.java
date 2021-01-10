@@ -1,19 +1,10 @@
 package service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.*;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
+import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
@@ -37,39 +28,46 @@ public class Retour extends Service implements Runnable{
 	@Override
 	public void run() {
 		try {
+			// ---- CREATION DES FLUX DE COMMUNICATION AVEC L'UTILISATEUR ----
 			this.sin = new BufferedReader(new InputStreamReader(this.clientSoc.getInputStream()));
 			this.cout = new PrintWriter (this.clientSoc.getOutputStream(), true);
 			
+			// ---- MESSAGE DE BIENVENUE ----
 			cout.write(NOUVEAU + NORESPONSE);
 			cout.println("Bienvenue au service Emprunt.");
 			
 			String message = "Donnez le numero du document que vous voulez rendre:";
 			
+			// ---- RECUPERATION DU NUMERO DE DOCUMENT A RENDRE ----
 			String numeroDocument = this.getDocumentChoice(ENCOURS, message);
 			if (numeroDocument.equals("0")) {
 				terminate();
 				return;
 			}
 			
+			
 			Document doc = this.documents.get(numeroDocument);
 			
+			// ---- PROCEDURE DE RETOUR DU DOCUMENT ----
 			doc.retour();
+			// ---- MESSAGE DE FIN + FERMETURE DES FLUX ----
 			cout.write(ENCOURS + NORESPONSE);
 			cout.println("Merci de votre visite, a bientot.");
 			terminate();
+			
+			// ---- PROCEDURE D'ENVOIE DES EMAIL AU ABONNE DANS LA LISTE D'ATTENTE DU DOCUMENT ----
 			ArrayList<String> mailList = doc.getMailList();
 			for (String email: mailList) {
 				this.sendEmail(email, "Alerte médiatèque !", "Bonjour,\nLe produit que vous attendiez viens d'être retourné, vous pouvez le reserver dés maintenant!\nBonne journée.");
 			}
 			return;
-			
 		} catch (IOException e) { e.printStackTrace(); }
 	}
 
 	public void sendEmail(String email, String titre, String msg) {
 		/*
 		 * Permet d'envoyer un mail a l'abonne 
-		 * Input: Le message et le titre de l'email
+		 * Input: Une adresse email, le message et le titre de l'email
 		 * Output: rien
 		 * */
 		String user = "roreply.mediatheque@gmail.com";
