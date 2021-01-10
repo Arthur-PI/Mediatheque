@@ -1,0 +1,3 @@
+#! /bin/sh
+
+java .:../lib/mail.jar:../lib/activation.jar main.Main
