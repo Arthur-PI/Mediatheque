@@ -124,7 +124,7 @@ public class Client {
 		 * Input: Un flux de type Scanner
 		 * Output: Une des valeur possible entre (0/1/2/3) 
 		 * */
-		System.out.println("Bienvenue sur l'application de votre Mediatheque preferer");
+		System.out.println("Bienvenue sur l'application de votre Médiathèque préférée");
 		System.out.println("Que voulez-vous faire ?");
 		System.out.println("1 - Reservation");
 		System.out.println("2 - Emprunt");
