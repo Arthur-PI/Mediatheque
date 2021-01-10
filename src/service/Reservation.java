@@ -37,20 +37,44 @@ public class Reservation extends Service implements Runnable{
 			
 			cout.write(ENCOURS + LONGMESSAGE);
 			String stock = this.getStock();
-			String message = "Que voulez-vous reserver (0 pour annuler):\n" + stock;
+			String message = "Que voulez-vous réserver (0 pour annuler):\n" + stock;
 			
 			String numeroDocument = this.getDocumentChoice(ENCOURS + LONGMESSAGE, message);
 			if (numeroDocument.equals("0")) {
-				terminate(); 
+				terminate();
 				return;
 			}
 			
 			message = "";
 			try {
 				this.documents.get(numeroDocument).reserverPour(this.abonne);
-				message = "Vous avez reserver le document numero " + numeroDocument + ", vous avez 2H pour venir le recuperer.";
+				message = "Vous avez réserver le document numéro " + numeroDocument + ", vous avez 2H pour venir le recuperer.";
 			} catch(ReservationException e) {
-				message = e.toString();
+				if(e.toString().contains("moins d'une minute")) {
+					String reponse = "";
+					cout.write(ENCOURS + NORESPONSE);
+					cout.println(e);
+					do {
+						cout.write(ENCOURS + NOMESSAGE);
+						cout.println("");
+						reponse = sin.readLine();
+					} while (!reponse.equals("oui") && !reponse.equals("non"));
+					
+					if (reponse.equals("oui")) {
+						int duration = this.documents.get(numeroDocument).getSecondUntilFinReserve();
+						cout.write(NOUVEAU + MUSIQUE);
+						cout.write(duration);
+						cout.println("Seulement " + duration + "s a patienter.");
+						try {
+							Thread.sleep(duration * 1000);
+							this.documents.get(numeroDocument).reserverPour(this.abonne);
+							message = "Vous avez réserver le document numéro " + numeroDocument + ", vous avez 2H pour venir le recuperer.";
+						} catch (InterruptedException | ReservationException e1) {
+							cout.write(NOUVEAU + NORESPONSE);
+							cout.println("Malheureusement le document à été emprunté par la personne ayant reservé...");
+						}
+					}
+				}
 			}
 			
 			cout.write(NOUVEAU + NORESPONSE);

@@ -71,7 +71,7 @@ public class Emprunt extends Service implements Runnable {
 				
 				if (reponse.equals("oui")) {
 					cout.write(ENCOURS + NORESPONSE);
-					this.sendEmail();
+					this.documents.get(numeroDocument).addToMailList(this.abonne.getEmail());
 					cout.println("Vous serez donc prevenu par mail");
 				}
 			}
@@ -80,40 +80,5 @@ public class Emprunt extends Service implements Runnable {
 			terminate();
 			
 		} catch (IOException e) { e.printStackTrace(); }
-	}
-	
-	public void sendEmail() {
-		// Ne fonctionne que sous Java 8 !!
-		final String user = "roreply.mediatheque@gmail.com";
-		final String password = "Motdepassedelamediateque";
-		String host = "smtp.gmail.com";
-		
-		String to = this.abonne.getEmail();
-		
-		Properties props = new Properties();
-		
-		props.put("mail.smtp.auth", "true");
-		props.put("mail.smtp.starttls.enable", "true");
-		props.put("mail.smtp.host", host);
-		props.put("mail.smtp.port", "587");
-		
-		Session session = Session.getDefaultInstance(props, new javax.mail.Authenticator() {
-			protected PasswordAuthentication getPasswordAuthentication() {
-				return new PasswordAuthentication(user, password);
-			}
-		});
-		
-		try {
-			MimeMessage message = new MimeMessage(session);
-			message.setFrom(new InternetAddress(user));
-			message.addRecipient(Message.RecipientType.TO,new InternetAddress(to));  
-		    message.setSubject("MY FUCKING CONTENT");  
-		    message.setText("LE VOILA TON PUTAIN DE MAIL SALE FILS DE PUTE,\nVA BIEN NIQUER TA MERE LA PROCHAINE FOIS !");
-		    Transport.send(message);
-		    System.out.println("Mail envoyer !");
-			
-		} catch (MessagingException e) {
-			e.printStackTrace();
-		}
 	}
 }

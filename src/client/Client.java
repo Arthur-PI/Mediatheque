@@ -1,8 +1,15 @@
 package client;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.util.Scanner;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class Client {
 	/*
@@ -17,12 +24,15 @@ public class Client {
 	private static final int NORESPONSE = 0b001000;
 	private static final int LONGMESSAGE = 0b010000;
 	private static final int NOMESSAGE = 0b100000;
+	private static final int MUSIQUE = 0b1000000;
 	
 	public static void main(String args[]) throws IOException, InterruptedException {
 		Socket monSocket;
 		String serviceNumber;
 		int etat;
 		Scanner sc = new Scanner(System.in);
+		int musiqueDuration;
+		MP3 clip = null;
 		
 		if (args.length == 0 || Integer.parseInt(args[0]) < 0 || Integer.parseInt(args[0]) > 3)
 			serviceNumber = homeScreen(sc);
@@ -51,6 +61,16 @@ public class Client {
 				clearScreen();
 			if ((etat & FINI) == FINI)
 				continue;
+			
+			if ((etat & MUSIQUE) == MUSIQUE) {
+				clip = startMusique();
+				musiqueDuration = sin.read();
+				System.out.println(sin.readLine());
+				Thread.sleep(musiqueDuration * 1000);
+				if(clip != null)
+					clip.close();
+				continue;
+			}
 			
 			inputMessage = "";
 			
@@ -156,5 +176,11 @@ public class Client {
 			System.out.println("Unnable to connect to 127.0.0.1");
 			return null;
 		}
+	}
+	
+	public static MP3 startMusique(){
+		MP3 music = new MP3("bestmusicever.mp3");
+		music.play();
+	    return music;
 	}
 }

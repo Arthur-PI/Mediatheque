@@ -3,6 +3,7 @@ package produit;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.ArrayList;
 
 import client.Abonne;
 import service.EmpruntException;
@@ -22,6 +23,7 @@ public class DVD implements Document{
 	// Les Date sont les dates et heures de fin des services pas le debut
 	private LocalDateTime dateEmprunt;
 	private LocalDateTime dateReservation;
+	private ArrayList<String> mailListe;
 	
 	private final static long NBJOURS_EMPRUNT = 15;
 	private final static long LIMITE_RETARD = 15;
@@ -34,6 +36,7 @@ public class DVD implements Document{
 		this.numero = NUMEROS++;
 		this.pourAdulte = pourAdulte;
 		this.annee = annee;
+		this.mailListe = new ArrayList<>();
 	}
 	
 	public DVD(String titre, double prix, String annee) {
@@ -53,15 +56,15 @@ public class DVD implements Document{
 	public void reserverPour(Abonne ab) throws ReservationException {
 		synchronized (this) {
 			if (ab.isBanished())
-				throw new ReservationException(this,
-						"Vous avez une penalite de retard vous ne pouvez rien reserver jusqu'au "
-								+ ab.getDatePenalite());
-			else if (this.isReserver())
-				throw new ReservationException(this, "Le DVD est deja reserver jusqu'a "
-						+ this.dateReservation.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)));
+				throw new ReservationException(this,"Vous avez une penalite de retard vous ne pouvez rien reserver jusqu'au " + ab.getDatePenalite());
+			else if (this.isReserver()) {
+				long difference = this.getSecondUntilFinReserve();
+				if ( difference <= 60)
+					throw new ReservationException(this, "Le DVD est deja louer mais il reste moins de " + difference + " secondes avant la fin, voulez-vous attendre ? (oui/non):");
+				throw new ReservationException(this, "Le DVD est deja reserver jusqu'a " + this.dateReservation.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)));
+			}
 			else if (this.isEmprunter())
-				throw new ReservationException(this, "Le DVD est deja emprunter jusqu'au " + this.dateEmprunt
-						.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)));
+				throw new ReservationException(this, "Le DVD est deja emprunter jusqu'au " + this.dateEmprunt.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)));
 			else if (!ab.isAdulte() && this.isPourAdulte())
 				throw new ReservationException(this, "Vous n'avez pas l'age pour emprunter ce DVD");
 			this.reserverPar = ab;
@@ -73,15 +76,11 @@ public class DVD implements Document{
 	public void empruntPar(Abonne ab) throws EmpruntException {
 		synchronized (this) {
 			if (ab.isBanished())
-				throw new EmpruntException(this,
-						"Vous avez une penalite de retard vous ne pouvez rien emprunter jusqu'au "
-								+ ab.getDatePenalite());
+				throw new EmpruntException(this,"Vous avez une penalite de retard vous ne pouvez rien emprunter jusqu'au " + ab.getDatePenalite());
 			else if (this.isReserver() && this.reserverPar != ab)
-				throw new EmpruntException(this, "Le DVD est deja reserver jusqu'a "
-						+ this.dateReservation.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)));
+				throw new EmpruntException(this, "Le DVD est deja reserver jusqu'a " + this.dateReservation.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)));
 			else if (this.isEmprunter())
-				throw new EmpruntException(this, "Le DVD est deja emprunter jusqu'au " + this.dateEmprunt
-						.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)));
+				throw new EmpruntException(this, "Le DVD est deja emprunter jusqu'au " + this.dateEmprunt.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)));
 			else if (!ab.isAdulte() && this.isPourAdulte())
 				throw new EmpruntException(this, "Vous n'avez pas l'age pour emprunter ce DVD");
 			this.emprunterPar = ab;
@@ -133,6 +132,22 @@ public class DVD implements Document{
 
 	public boolean isPourAdulte() {
 		return this.pourAdulte;
+	}
+	
+	public void addToMailList(String email) {
+		
+		this.mailListe.add(email);
+		
+	}
+	
+	public ArrayList<String> getMailList(){
+		ArrayList<String> tmp = new ArrayList<>(this.mailListe);
+		this.mailListe.clear();
+		return tmp;
+	}
+	
+	public int getSecondUntilFinReserve(){
+		return (int) Duration.between(this.dateReservation, LocalDateTime.now()).getSeconds();
 	}
 
 	@Override

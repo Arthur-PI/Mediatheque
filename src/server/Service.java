@@ -21,12 +21,13 @@ public abstract class Service {
 	protected PrintWriter cout;
 	
 	protected static final int CODERREUR = 1;
-	protected static final int ENCOURS = 0b000001;
-	protected static final int NOUVEAU = 0b000010;
-	protected static final int FINI = 0b000100;
-	protected static final int NORESPONSE = 0b001000;
-	protected static final int LONGMESSAGE = 0b010000;
-	protected static final int NOMESSAGE = 0b100000;
+	protected static final int ENCOURS = 0b0000001;
+	protected static final int NOUVEAU = 0b0000010;
+	protected static final int FINI = 0b0000100;
+	protected static final int NORESPONSE = 0b0001000;
+	protected static final int LONGMESSAGE = 0b0010000;
+	protected static final int NOMESSAGE = 0b0100000;
+	protected static final int MUSIQUE = 0b1000000;
 	
 	protected int setNumAbo() throws IOException {
 		/*
